@@ -1,0 +1,43 @@
+# ============================================================
+# Deep Learning - Mantenimiento Predictivo de Red de Fibra Optica
+# ============================================================
+# Para instalar: pip install -r requirements.txt
+
+# --- Ciencia de Datos ---
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# --- Machine Learning Clasico ---
+scikit-learn>=1.3.0
+statsmodels>=0.14.0       # Para modelos ARIMA
+
+# --- Deep Learning ---
+torch>=2.0.0              # PyTorch - framework principal
+torchvision>=0.15.0
+torchaudio>=2.0.0
+tensorflow>=2.13.0        # TensorFlow/Keras - modelo comparativo
+
+# --- Tracking de Experimentos ---
+mlflow>=2.8.0
+
+# --- Visualizacion ---
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# --- API ---
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+
+# --- Dashboard ---
+dash>=2.14.0
+dash-bootstrap-components>=1.5.0
+
+# --- Utilidades ---
+pyyaml>=6.0
+pyarrow>=14.0.0           # Para leer/escribir parquet
+tqdm>=4.66.0
+python-dateutil>=2.8.0
+joblib>=1.3.0

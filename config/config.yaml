@@ -1,0 +1,218 @@
+# ============================================================
+# Configuracion Central del Proyecto
+# ============================================================
+# Este archivo centraliza TODOS los hiperparametros y rutas.
+# Ventaja: cambiar un valor aqui se refleja en todo el proyecto
+# sin necesidad de editar multiples archivos.
+
+# --- Rutas del proyecto ---
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  models: "models"
+  mlruns: "mlruns"
+
+# --- Generacion de datos sinteticos ---
+# =====================================================================
+# FUENTES DE LOS VALORES:
+#   - ITU-T G.652 (2024): Fibra monomodo estandar, define atenuacion maxima
+#   - ITU-T G.984.2: GPON, define potencia optica OLT/ONT y BER
+#   - TIA/EIA-568: Perdida maxima por conector (0.75 dB) y empalme (0.3 dB)
+#   - FOA (Fiber Optic Association): Valores tipicos de campo
+#   - IEEE DataPort OTDR datasets: Trazas reales de fallas
+# =====================================================================
+data_generation:
+  n_segments: 200              # Segmentos de fibra optica
+  days: 7                      # Dias de simulacion
+  reading_interval_min: 15     # Lectura cada 15 minutos
+  random_seed: 42
+
+  # --- Contexto fisico de la red simulada ---
+  # Red GPON (Gigabit Passive Optical Network) en zona urbana
+  # Fibra: ITU-T G.652.D monomodo, longitud de onda 1550 nm
+  # Topologia: OLT central -> splitter 1:32 -> ONTs en edificios
+  # Alcance tipico: 5-20 km por segmento
+  network:
+    fiber_type: "G.652.D"          # Fibra monomodo estandar (la mas comun del mundo)
+    wavelength_nm: 1550            # Banda C, menor atenuacion
+    topology: "GPON"               # Gigabit Passive Optical Network
+    split_ratio: 32                # 1 OLT atiende 32 ONTs
+    segment_length_km: [5, 20]     # Rango de longitud por segmento
+
+  # Distribucion de tipos de falla (suman 1.0)
+  # Fuente: Papers de ML-based fault detection en PON (arxiv 2202.11756)
+  # En redes reales, la degradacion gradual es la falla mas comun (~50%)
+  fault_distribution:
+    physical_cut: 0.25         # Corte fisico (excavacion, roedores, vandalismo)
+    degradation: 0.50          # Degradacion gradual (envejecimiento, ambiente)
+    bad_splice: 0.25           # Empalme defectuoso (fusion o mecanico mal hecho)
+
+  # Rango de firmas pre-falla (horas antes del evento)
+  pre_fault_signature:
+    min_hours: 12
+    max_hours: 72
+
+  # --- RANGOS NORMALES DE OPERACION ---
+  # Cada valor tiene su fuente y justificacion fisica
+  normal_ranges:
+
+    # Potencia optica recibida en el receptor (ONT lado cliente)
+    # Fuente: ITU-T G.984.2 - GPON Physical Media Dependent (PMD)
+    #   - Sensibilidad receptor APD: -28 dBm (minimo para decodificar)
+    #   - Sobrecarga receptor: -8 dBm (maximo antes de saturar)
+    #   - Rango optimo de trabajo: -18 dBm a -8 dBm
+    #   - OLT transmite entre +3 dBm y +7 dBm
+    #   - Despues de atenuacion de fibra + splitter, llegan entre -18 y -8 dBm
+    # Si cae por debajo de -25 dBm -> alarma, por debajo de -28 -> sin servicio
+    optical_power_dbm: [-18.0, -8.0]
+
+    # Atenuacion de la fibra por kilometro
+    # Fuente: ITU-T G.652, FOA (Fiber Optic Association)
+    #   - G.652.D @ 1550nm: tipico 0.20 dB/km, maximo 0.25 dB/km
+    #   - G.652.D @ 1310nm: tipico 0.35 dB/km, maximo 0.40 dB/km
+    #   - Fibra envejecida o danada: puede subir a 0.30-0.50 dB/km
+    #   - Corte fisico: atenuacion infinita (>30 dB en el punto de corte)
+    attenuation_db_km: [0.18, 0.25]
+
+    # Bit Error Rate (tasa de errores por bit)
+    # Fuente: ITU-T G.984.2, IEEE 802.3
+    #   - Objetivo de diseno: BER < 1e-10 (1 error cada 10 mil millones de bits)
+    #   - Umbral de alarma: BER > 1e-8 (servicio degradado)
+    #   - Pre-FEC tipico: BER ~1e-3 (se corrige por Forward Error Correction)
+    #   - Post-FEC aceptable: BER < 1e-12
+    #   - Sin servicio: BER > 1e-4
+    ber: [1.0e-12, 1.0e-9]
+
+    # OSNR - Optical Signal to Noise Ratio
+    # Fuente: Papers de OPM (Optical Performance Monitoring)
+    #   - Red sana GPON: 20-35 dB
+    #   - Alarma: OSNR < 15 dB (mencionado en arxiv 1710.04620)
+    #   - Critico: OSNR < 10 dB (señal apenas distinguible del ruido)
+    #   - En redes cortas (GPON <20km) sin amplificadores: tipico 25-35 dB
+    osnr_db: [20.0, 35.0]
+
+    # Dispersion cromatica
+    # Fuente: ITU-T G.652
+    #   - G.652.D @ 1550nm: coeficiente tipico ~17 ps/(nm*km)
+    #   - Para segmentos de 5-20 km: 85-340 ps/nm total
+    #   - Expresado por km: 0.5-2.0 ps/(nm*km) es el rango de variacion
+    #     que ve el monitor por fluctuaciones de temperatura y tension
+    #   - Valores altos -> ensanchamiento del pulso -> errores (ISI)
+    chromatic_dispersion_ps_nm_km: [15.0, 18.0]
+
+  # --- VALORES EN CONDICION DE FALLA ---
+  # Fuente: Trazas OTDR reales (IEEE DataPort), FOA, papers de fault detection
+  fault_values:
+    physical_cut:
+      # Corte fisico: la fibra se rompe, la luz no pasa
+      optical_power_dbm: -40.0    # Receptor no detecta senal (< sensibilidad -28 dBm)
+      attenuation_event_db: 30.0  # Perdida en el punto de corte: >25 dB (FOA)
+      ber: 0.5                    # 50% de los bits son error (basicamente aleatorio)
+      osnr_db: 0.0                # Solo ruido, sin senal
+
+    degradation:
+      # Degradacion gradual: fibra se deteriora pero funciona
+      optical_power_drop_db: 8.0  # Cae 5-10 dB respecto a lo normal
+      attenuation_increase: 0.15  # Sube a 0.35-0.40 dB/km (cerca del maximo G.652)
+      ber_multiplier: 1000.0      # BER sube 3 ordenes de magnitud
+      osnr_drop_db: 10.0          # OSNR cae 8-12 dB
+
+    bad_splice:
+      # Empalme defectuoso: conexion intermitente
+      # Fuente: FOA - empalme fusion bueno: <0.1 dB, malo: >0.5 dB
+      #         TIA-568: maximo aceptable empalme mecanico: 0.3 dB
+      splice_loss_db: [0.5, 3.0]  # Empalme malo pierde 0.5-3.0 dB
+      reflectance_db: -25.0       # Reflectancia alta (normal: <-55 dB)
+      oscillation_amplitude_db: 2.0  # Fluctuaciones de +/- 2 dB por inestabilidad
+
+  # --- PERDIDAS FIJAS DEL SISTEMA (para contexto) ---
+  # Fuente: FOA, ITU-T G.984.2
+  system_losses:
+    connector_loss_db: 0.5          # Por conector (FOA: tipico 0.3, max 0.75 TIA-568)
+    fusion_splice_loss_db: 0.1      # Empalme fusion bueno (FOA: tipico 0.05-0.15)
+    mechanical_splice_loss_db: 0.3  # Empalme mecanico (TIA-568: max 0.3)
+    splitter_1x32_loss_db: 17.0     # Splitter 1:32 (teorico: 10*log10(32)=15 dB + insercion)
+
+# --- Preprocesamiento ---
+preprocessing:
+  test_size: 0.2
+  val_size: 0.1
+  sequence_length: 48          # 48 pasos = 12 horas de historia
+  prediction_horizon: 24       # Predecir falla en proximas 24 horas
+  scaler: "standard"           # "standard" o "minmax"
+
+# --- Feature Engineering ---
+features:
+  rolling_windows: [4, 12, 48]  # Ventanas: 1h, 3h, 12h
+  lag_steps: [1, 4, 12, 48]     # Lags temporales
+  target_classes:
+    0: "normal"
+    1: "physical_cut"
+    2: "degradation"
+    3: "bad_splice"
+
+# --- Modelos ---
+models:
+  # LSTM Bidireccional con Atencion (PyTorch)
+  lstm_predictor:
+    hidden_size: 128
+    num_layers: 2
+    dropout: 0.3
+    bidirectional: true
+    learning_rate: 0.001
+    batch_size: 64
+    epochs: 50
+    patience: 10               # Early stopping
+
+  # Autoencoder para deteccion de anomalias (PyTorch)
+  autoencoder:
+    encoder_dims: [64, 32, 16, 8]   # Capas del encoder
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 128
+    epochs: 100
+    anomaly_percentile: 95     # Umbral para anomalia
+
+  # CNN 1D para clasificacion (PyTorch)
+  cnn1d:
+    channels: [32, 64, 128]
+    kernel_size: 3
+    dropout: 0.3
+    learning_rate: 0.001
+    batch_size: 64
+    epochs: 50
+    num_classes: 4
+
+  # LSTM TensorFlow/Keras
+  tf_lstm:
+    units: [128, 64]
+    dropout: 0.3
+    learning_rate: 0.001
+    batch_size: 64
+    epochs: 50
+
+  # Random Forest
+  random_forest:
+    n_estimators: 200
+    max_depth: 15
+    min_samples_split: 5
+
+# --- MLflow ---
+mlflow:
+  experiment_name: "fiber_optic_predictive_maintenance"
+  tracking_uri: "mlruns"
+
+# --- API ---
+api:
+  host: "0.0.0.0"
+  port: 8000
+  model_path: "models/best_model.pt"
+
+# --- Dashboard ---
+dashboard:
+  host: "0.0.0.0"
+  port: 8050
+  update_interval_sec: 30
+  map_center:                  # Lima, Peru
+    lat: -12.0464
+    lon: -77.0428

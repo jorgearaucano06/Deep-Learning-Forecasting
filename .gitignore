@@ -1,0 +1,50 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# --- Entornos virtuales ---
+venv/
+env/
+.env
+
+# --- Datos (archivos grandes, se generan con scripts) ---
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# --- Modelos entrenados (se generan con training) ---
+models/*.pt
+models/*.pth
+models/*.h5
+models/*.pkl
+models/*.joblib
+
+# --- MLflow ---
+mlruns/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db
+*.log
+nul
+
+# --- Claude ---
+.claude/
+
+# --- Archivos internos ---
+INSTRUCCIONES.md
+guia_aprendizaje/
