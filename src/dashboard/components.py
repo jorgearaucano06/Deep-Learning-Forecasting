@@ -33,7 +33,7 @@ def create_risk_map(segments_data: pd.DataFrame) -> go.Figure:
     colors = [color_map.get(r, "#95a5a6") for r in segments_data.get("risk_level", ["low"] * n)]
 
     fig = go.Figure()
-    fig.add_trace(go.Scattermapbox(
+    fig.add_trace(go.Scattermap(
         lat=lats, lon=lons,
         mode="markers",
         marker=dict(size=12, color=colors, opacity=0.8),
@@ -47,7 +47,7 @@ def create_risk_map(segments_data: pd.DataFrame) -> go.Figure:
     ))
 
     fig.update_layout(
-        mapbox=dict(style="open-street-map", center=dict(lat=-12.0464, lon=-77.0428), zoom=11),
+        map=dict(style="open-street-map", center=dict(lat=-12.0464, lon=-77.0428), zoom=11),
         margin=dict(r=0, t=40, l=0, b=0),
         title="Mapa de Riesgo - Red de Fibra Optica Lima",
         height=500,
