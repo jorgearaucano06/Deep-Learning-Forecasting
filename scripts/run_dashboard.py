@@ -18,11 +18,14 @@ from src.utils.config_loader import load_config
 
 def main():
     config = load_config()
-    dash_cfg = config["dashboard"]
+    port = config["dashboard"]["port"]
+    print(f"\n  GPON Sentinel AI - NOC Dashboard")
+    print(f"  Abrir en navegador: http://localhost:{port}\n")
     dash_app.run(
-        host=dash_cfg["host"],
-        port=dash_cfg["port"],
+        host="127.0.0.1",
+        port=port,
         debug=True,
+        use_reloader=False,
     )
 
 

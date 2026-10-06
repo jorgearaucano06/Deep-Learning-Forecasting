@@ -1,0 +1,944 @@
+/* =============================================================
+   GPON SENTINEL AI - NOC Dashboard Theme
+   Dark theme inspired by Network Operations Center displays.
+   ============================================================= */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+/* --- CSS Variables (Design Tokens) --- */
+:root {
+    --surface-0: #0b1326;
+    --surface-1: #131b2e;
+    --surface-2: #171f33;
+    --surface-3: #222a3d;
+    --surface-4: #2a3348;
+
+    --primary: #38bdf8;
+    --primary-dim: #1e6b8f;
+    --secondary: #4edea3;
+    --secondary-dim: #2a7d5e;
+    --tertiary: #f59e0b;
+    --tertiary-light: #ffc174;
+    --error: #e74c3c;
+    --error-light: #ffb4ab;
+
+    --on-surface: #dae2fd;
+    --on-surface-dim: #a0aec0;
+    --outline: #87929a;
+    --outline-dim: #3d4a5c;
+
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+    --sidebar-width: 250px;
+    --header-height: 130px;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.35);
+    --shadow-elevated: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+/* --- Global Reset --- */
+* { box-sizing: border-box; }
+
+body {
+    font-family: var(--font-sans) !important;
+    background-color: var(--surface-0) !important;
+    color: var(--on-surface) !important;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-1); }
+::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--outline); }
+
+/* --- Sidebar --- */
+.noc-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--surface-1);
+    border-right: 1px solid var(--outline-dim);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.sidebar-logo {
+    padding: 20px 18px 12px;
+    border-bottom: 1px solid var(--outline-dim);
+}
+
+.sidebar-logo h2 {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--primary);
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.sidebar-logo .sidebar-version {
+    font-size: 0.7rem;
+    color: var(--outline);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 12px 0;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    color: var(--on-surface-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-nav-item:hover {
+    background: var(--surface-2);
+    color: var(--on-surface);
+}
+
+.sidebar-nav-item.active {
+    background: rgba(56, 189, 248, 0.08);
+    color: var(--primary);
+    border-left-color: var(--primary);
+}
+
+.sidebar-nav-item .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.sidebar-widget {
+    padding: 16px 18px;
+    border-top: 1px solid var(--outline-dim);
+    background: var(--surface-2);
+}
+
+.sidebar-widget-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--outline);
+    margin-bottom: 8px;
+}
+
+.sidebar-widget-value {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--secondary);
+    font-weight: 600;
+}
+
+.sidebar-widget-bar {
+    height: 4px;
+    background: var(--surface-4);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.sidebar-widget-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+/* --- Main Content Area (offset by sidebar) --- */
+.noc-main {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* --- Header --- */
+.noc-header {
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--outline-dim);
+    padding: 14px 24px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.header-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-title h1 {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0;
+    letter-spacing: 1.5px;
+}
+
+.header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--primary);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.header-subtitle {
+    font-size: 0.75rem;
+    color: var(--outline);
+    margin: 0;
+}
+
+.header-right {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--on-surface-dim);
+}
+
+.header-clock {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--on-surface);
+    font-weight: 500;
+}
+
+.header-operator {
+    font-size: 0.7rem;
+    color: var(--outline);
+    margin-top: 2px;
+}
+
+/* --- Pulse Indicator --- */
+.pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary);
+    animation: pulse 2s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+.pulse-dot-red {
+    background: var(--error);
+    animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(78, 222, 163, 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(78, 222, 163, 0); }
+}
+
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+}
+
+/* --- Filter Bar --- */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0 0;
+    flex-wrap: wrap;
+}
+
+.filter-bar .Select-control,
+.filter-bar .dash-dropdown .Select-control {
+    background: var(--surface-2) !important;
+    border-color: var(--outline-dim) !important;
+    color: var(--on-surface) !important;
+    min-height: 32px;
+    font-size: 0.8rem;
+}
+
+.filter-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--outline);
+    font-weight: 600;
+}
+
+/* --- Content Area --- */
+.noc-content {
+    padding: 16px 20px 30px;
+}
+
+/* --- KPI Cards --- */
+.kpi-card {
+    background: var(--surface-2);
+    border: 1px solid var(--outline-dim);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+}
+
+.kpi-card-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--outline);
+    margin-bottom: 6px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kpi-card-value {
+    font-family: var(--font-mono);
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.kpi-card-sub {
+    font-size: 0.7rem;
+    color: var(--on-surface-dim);
+}
+
+.kpi-card-sub .trend-up { color: var(--secondary); }
+.kpi-card-sub .trend-down { color: var(--error); }
+
+.kpi-service-bar {
+    height: 3px;
+    background: var(--surface-4);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.kpi-service-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+/* accent stripe on the left of the KPI card */
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+}
+.kpi-card.kpi-primary::before   { background: var(--primary); }
+.kpi-card.kpi-error::before     { background: var(--error); }
+.kpi-card.kpi-secondary::before { background: var(--secondary); }
+.kpi-card.kpi-tertiary::before  { background: var(--tertiary); }
+
+/* --- Section Cards (panels) --- */
+.noc-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--outline-dim);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.noc-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--outline-dim);
+    background: var(--surface-1);
+}
+
+.noc-panel-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--on-surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.noc-panel-body {
+    padding: 14px;
+}
+
+/* --- Alert Items --- */
+.alert-item {
+    background: var(--surface-3);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--error);
+    transition: background 0.15s ease;
+}
+
+.alert-item:hover {
+    background: var(--surface-4);
+}
+
+.alert-item.alert-high {
+    border-left-color: var(--tertiary);
+}
+
+.alert-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.alert-item-segment {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--on-surface);
+}
+
+.alert-item-prob {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.alert-item-prob.critical { color: var(--error-light); }
+.alert-item-prob.high     { color: var(--tertiary-light); }
+
+.alert-item-detail {
+    font-size: 0.7rem;
+    color: var(--on-surface-dim);
+    margin-bottom: 8px;
+}
+
+.alert-progress-bar {
+    height: 3px;
+    background: var(--surface-4);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.alert-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.alert-progress-fill.critical { background: var(--error); }
+.alert-progress-fill.high     { background: var(--tertiary); }
+
+.alert-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-alert {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--outline-dim);
+    background: var(--surface-2);
+    color: var(--on-surface-dim);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-alert:hover {
+    background: var(--primary);
+    color: var(--surface-0);
+    border-color: var(--primary);
+}
+
+.btn-alert-dispatch {
+    background: rgba(231, 76, 60, 0.15);
+    color: var(--error-light);
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.btn-alert-dispatch:hover {
+    background: var(--error);
+    color: white;
+    border-color: var(--error);
+}
+
+/* --- HUD Strip --- */
+.hud-strip {
+    display: flex;
+    gap: 1px;
+    background: var(--outline-dim);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.hud-cell {
+    flex: 1;
+    background: var(--surface-3);
+    padding: 8px 10px;
+    text-align: center;
+}
+
+.hud-cell:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.hud-cell:last-child  { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+
+.hud-cell-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--outline);
+    margin-bottom: 3px;
+}
+
+.hud-cell-value {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--on-surface);
+}
+
+/* --- Legend (floating on map) --- */
+.map-legend {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(19, 27, 46, 0.92);
+    border: 1px solid var(--outline-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    z-index: 10;
+}
+
+.map-legend-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--outline);
+    margin-bottom: 6px;
+}
+
+.map-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: var(--on-surface-dim);
+    margin-bottom: 3px;
+}
+
+.map-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* --- Data Table Overrides --- */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner {
+    background: var(--surface-2) !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.dash-table-container .cell-table,
+.dash-table-container .dash-spreadsheet-inner td {
+    background-color: var(--surface-2) !important;
+    color: var(--on-surface) !important;
+    border-color: var(--outline-dim) !important;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 8px 10px !important;
+}
+
+.dash-table-container .dash-spreadsheet-inner th {
+    background-color: var(--surface-1) !important;
+    color: var(--primary) !important;
+    border-color: var(--outline-dim) !important;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 10px !important;
+}
+
+.dash-table-container .dash-spreadsheet-inner tr:hover td {
+    background-color: var(--surface-3) !important;
+}
+
+.dash-table-container .previous-next-container {
+    background: var(--surface-2) !important;
+    color: var(--on-surface-dim) !important;
+}
+
+.dash-table-container .previous-next-container button {
+    color: var(--primary) !important;
+}
+
+.dash-table-container input.dash-filter--case--sensitive {
+    background: var(--surface-3) !important;
+    color: var(--on-surface) !important;
+    border-color: var(--outline-dim) !important;
+}
+
+/* --- Summary Pills --- */
+.summary-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.summary-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-3);
+    border: 1px solid var(--outline-dim);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.72rem;
+}
+
+.summary-pill-label {
+    color: var(--outline);
+}
+
+.summary-pill-value {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--on-surface);
+}
+
+/* --- Dash 4.x Dropdown Overrides (dark) --- */
+
+/* Trigger area (closed state) */
+.dash-dropdown {
+    background: var(--surface-3) !important;
+    border-color: var(--outline-dim) !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.dash-dropdown-trigger,
+.dash-dropdown-grid-container.dash-dropdown-trigger {
+    background: var(--surface-3) !important;
+}
+
+/* Selected value text (THE FIX: visible when dropdown is closed) */
+.dash-dropdown-value {
+    color: #ffffff !important;
+    font-size: 0.82rem;
+}
+
+.dash-dropdown-value-item {
+    color: #ffffff !important;
+}
+
+/* Placeholder text */
+.dash-dropdown-placeholder,
+.dash-dropdown-value.dash-dropdown-placeholder {
+    color: var(--outline) !important;
+}
+
+/* Dropdown arrow icon */
+.dash-dropdown-trigger-icon {
+    fill: var(--on-surface-dim) !important;
+    color: var(--on-surface-dim) !important;
+}
+
+.dash-dropdown-trigger-icon svg,
+.dash-dropdown-trigger-icon path {
+    fill: var(--on-surface-dim) !important;
+}
+
+/* Clear button */
+.dash-dropdown-clear {
+    color: var(--outline) !important;
+}
+
+/* Dropdown content (open state menu) */
+.dash-dropdown-content {
+    background: var(--surface-2) !important;
+    border-color: var(--outline-dim) !important;
+    border: 1px solid var(--outline-dim) !important;
+    z-index: 1050 !important;
+}
+
+/* Search input inside dropdown */
+.dash-dropdown-search {
+    background: var(--surface-3) !important;
+    color: #ffffff !important;
+    border-color: var(--outline-dim) !important;
+}
+
+.dash-dropdown-search-icon {
+    color: var(--outline) !important;
+}
+
+.dash-dropdown-search-icon svg,
+.dash-dropdown-search-icon path {
+    fill: var(--outline) !important;
+}
+
+/* Options list */
+.dash-dropdown-options {
+    background: var(--surface-2) !important;
+}
+
+/* Individual option */
+.dash-dropdown-option {
+    background: var(--surface-2) !important;
+    color: var(--on-surface) !important;
+    font-size: 0.82rem;
+}
+
+.dash-dropdown-option:hover,
+.dash-dropdown-option[data-focused="true"] {
+    background: var(--primary-dim) !important;
+    color: #ffffff !important;
+}
+
+.dash-dropdown-option[data-selected="true"],
+.dash-dropdown-option[aria-selected="true"] {
+    background: rgba(56, 189, 248, 0.25) !important;
+    color: var(--primary) !important;
+    font-weight: 600;
+}
+
+/* Action buttons (Select All / Clear All for multi) */
+.dash-dropdown-actions {
+    background: var(--surface-3) !important;
+    border-color: var(--outline-dim) !important;
+}
+
+.dash-dropdown-action-button {
+    color: var(--primary) !important;
+}
+
+/* Multi-value tags */
+.dash-dropdown-value-count {
+    color: var(--primary) !important;
+    background: rgba(56, 189, 248, 0.2) !important;
+}
+
+/* Focus target */
+.dash-dropdown-focus-target {
+    color: #ffffff !important;
+}
+
+/* Wrapper */
+.dash-dropdown-wrapper {
+    background: var(--surface-3) !important;
+}
+
+/* --- Checklist / Radio toggle overrides --- */
+.form-check-input:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.form-check-label {
+    color: var(--on-surface-dim) !important;
+    font-size: 0.78rem;
+}
+
+/* --- Buttons --- */
+.btn-noc {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--outline-dim);
+    background: var(--surface-3);
+    color: var(--on-surface-dim);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-noc:hover {
+    background: var(--primary);
+    color: var(--surface-0);
+    border-color: var(--primary);
+}
+
+.btn-noc-primary {
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--primary);
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+/* --- Countdown badge --- */
+.countdown-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--outline);
+    padding: 3px 10px;
+    background: var(--surface-3);
+    border-radius: 12px;
+    border: 1px solid var(--outline-dim);
+}
+
+/* --- Utility Classes --- */
+.text-primary  { color: var(--primary) !important; }
+.text-secondary{ color: var(--secondary) !important; }
+.text-tertiary { color: var(--tertiary) !important; }
+.text-error    { color: var(--error) !important; }
+.text-dim      { color: var(--outline) !important; }
+.text-mono     { font-family: var(--font-mono) !important; }
+
+.bg-surface-0 { background: var(--surface-0) !important; }
+.bg-surface-1 { background: var(--surface-1) !important; }
+.bg-surface-2 { background: var(--surface-2) !important; }
+.bg-surface-3 { background: var(--surface-3) !important; }
+
+.gap-row { margin-bottom: 16px; }
+
+/* --- Risk status badges --- */
+.risk-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.risk-badge-normal   { background: rgba(78,222,163,0.15); color: var(--secondary); }
+.risk-badge-medium   { background: rgba(245,158,11,0.15); color: var(--tertiary); }
+.risk-badge-high     { background: rgba(255,193,116,0.15); color: var(--tertiary-light); }
+.risk-badge-critical { background: rgba(231,76,60,0.15);   color: var(--error); }
+
+/* --- Graph container tweaks --- */
+.js-plotly-plot .plotly .modebar {
+    background: transparent !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn path {
+    fill: var(--outline) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn:hover path {
+    fill: var(--primary) !important;
+}
+
+/* --- Row/Column spacing for the grid --- */
+.noc-grid-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+/* Force columns in a row to stretch to same height */
+.noc-row-stretch {
+    align-items: stretch !important;
+}
+
+.noc-row-stretch > [class*="col"] {
+    display: flex !important;
+}
+
+.noc-row-stretch > [class*="col"] > .noc-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* --- Table search bar --- */
+.table-search {
+    background: var(--surface-3) !important;
+    border: 1px solid var(--outline-dim) !important;
+    color: var(--on-surface) !important;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    width: 250px;
+}
+
+.table-search::placeholder {
+    color: var(--outline) !important;
+}
+
+/* --- Responsive adjustments --- */
+@media (max-width: 1200px) {
+    .noc-sidebar {
+        width: 60px;
+        overflow: hidden;
+    }
+    .noc-sidebar .sidebar-nav-item span:not(.material-symbols-outlined) {
+        display: none;
+    }
+    .noc-sidebar .sidebar-logo h2,
+    .noc-sidebar .sidebar-logo .sidebar-version,
+    .noc-sidebar .sidebar-widget {
+        display: none;
+    }
+    .noc-main {
+        margin-left: 60px;
+    }
+}
