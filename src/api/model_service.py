@@ -8,6 +8,7 @@ Las requests subsiguientes reutilizan el mismo modelo.
 """
 
 import torch
+import joblib
 import numpy as np
 from typing import Dict, List, Optional
 from pathlib import Path
@@ -31,15 +32,16 @@ class ModelService:
         self.config = load_config()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = None
+        self.scaler = None
         self.model_loaded = False
         self.feature_cols = [
             "optical_power_dbm", "attenuation_db_km", "ber", "osnr_db",
-            "chromatic_dispersion", "temperature", "humidity",
+            "chromatic_dispersion", "temperature", "humidity", "log_ber",
         ]
 
     def load_model(self, model_path: str = None) -> bool:
         """
-        Carga el modelo LSTM desde disco.
+        Carga el modelo LSTM y el scaler desde disco.
 
         Args:
             model_path: Ruta al archivo .pt. Si None, busca en models/lstm_best.pt.
@@ -68,6 +70,14 @@ class ModelService:
             else:
                 logger.warning("Modelo no encontrado en %s. Usando pesos aleatorios.", model_path)
 
+            # Cargar scaler
+            scaler_path = get_path("models") / "scaler.joblib"
+            if scaler_path.exists():
+                self.scaler = joblib.load(scaler_path)
+                logger.info("Scaler cargado desde %s", scaler_path)
+            else:
+                logger.warning("Scaler no encontrado. Predicciones sin normalizar.")
+
             self.model.eval()
             self.model_loaded = True
             return True
@@ -91,9 +101,13 @@ class ModelService:
         if not self.model_loaded:
             self.load_model()
 
-        # Convertir lecturas a tensor
+        # Convertir lecturas a array
         features = []
         for reading in readings:
+            # Calcular log_ber si no viene en el request
+            if "log_ber" not in reading and "ber" in reading:
+                ber_val = reading["ber"]
+                reading["log_ber"] = np.log10(max(ber_val, 1e-15))
             row = [reading.get(col, 0.0) for col in self.feature_cols]
             features.append(row)
 
@@ -104,15 +118,20 @@ class ModelService:
 
         features = features[-seq_len:]  # Tomar ultimas 48
 
+        # Normalizar con el scaler del entrenamiento
+        features_array = np.array(features)
+        if self.scaler is not None:
+            features_array = self.scaler.transform(features_array)
+
         # Crear tensor: (1, seq_len, n_features)
-        x = torch.FloatTensor([features]).to(self.device)
+        x = torch.FloatTensor(features_array).unsqueeze(0).to(self.device)
 
         # Inferencia
         with torch.no_grad():
             output = self.model(x)
             probability = torch.sigmoid(output).item()
 
-        # Clasificar riesgo
+        # Clasificar riesgo (usando datos ORIGINALES, no normalizados)
         risk_level, fault_class, recommendations = self._classify_risk(probability, readings[-1])
 
         return {
@@ -164,7 +183,7 @@ class ModelService:
 
         # Ajustar clase basado en metricas
         power = last_reading.get("optical_power_dbm", -5)
-        if power < -15:
+        if power < -25:
             fault_class = "physical_cut"
         elif last_reading.get("attenuation_db_km", 0.2) > 0.4:
             fault_class = "bad_splice"

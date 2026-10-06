@@ -17,6 +17,7 @@ el modelo veria datos "del futuro" durante el entrenamiento.
 
 import numpy as np
 import pandas as pd
+import joblib
 from pathlib import Path
 from typing import Dict, Tuple
 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -224,11 +225,16 @@ class FiberDataPreprocessor:
         val_df = self.normalize(val_df, fit=False)
         test_df = self.normalize(test_df, fit=False)
 
-        # Guardar
+        # Guardar datos
         processed_path = get_path("processed_data")
         train_df.to_parquet(processed_path / "train.parquet", index=False)
         val_df.to_parquet(processed_path / "val.parquet", index=False)
         test_df.to_parquet(processed_path / "test.parquet", index=False)
+
+        # Guardar scaler para la API
+        scaler_path = get_path("models") / "scaler.joblib"
+        joblib.dump(self.scaler, scaler_path)
+        logger.info("Scaler guardado en %s", scaler_path)
 
         logger.info("Datos procesados guardados en %s", processed_path)
         return train_df, val_df, test_df
